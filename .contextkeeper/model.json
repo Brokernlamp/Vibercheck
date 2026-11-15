@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-01T07:56:21.260Z",
+  "root": "/Users/swarjadhav/Projects/Ai security audit",
+  "name": "vibecheck",
+  "languages": [
+    "TypeScript",
+    "JavaScript",
+    "Python"
+  ],
+  "primaryLanguage": "TypeScript",
+  "fileCount": 327,
+  "lineCount": 48888,
+  "ecosystems": [
+    "node",
+    "python"
+  ],
+  "packageManagers": [
+    "npm"
+  ],
+  "frameworks": [
+    "Next.js",
+    "React"
+  ],
+  "dependencies": [
+    {
+      "name": "drizzle-orm",
+      "version": "^0.45.4",
+      "kind": "runtime",
+      "ecosystem": "node"
+    },
+    {
+      "name": "fflate",
+      "version": "^0.8.3",
+      "kind": "runtime",
+      "ecosystem": "node"
+    },
+    {
+      "name": "lucide-react",
+      "version": "^1.61.0",
+      "kind": "runtime",
+      "ecosystem": "node"
+    },
+    {
+      "name": "next",
+      "version": "16.4.3",
+      "kind": "runtime",
+      "ecosystem": "node"
+    },
+    {
+      "name": "postgres",
+      "version": "^3.4.9",
+      "kind": "runtime",
+      "ecosystem": "node"
+    },
+    {
+      "name": "react",
+      "version": "19.3.1",
+      "kind": "runtime",
+      "ecosystem": "node"
+    },
+    {
+      "name": "react-dom",
+      "version": "19.3.1",
+      "kind": "runtime",
+      "ecosystem": "node"
+    },
+    {
+      "name": "semver",
+      "version": "^7.8.5",
+      "kind": "runtime",
+      "ecosystem": "node"
+    },
+    {
+      "name": "zod",
+      "version": "^4.6.7",
+      "kind": "runtime",
+      "ecosystem": "node"
+    },
+    {
+      "name": "@opennextjs/cloudflare",
+      "version": "1.20.12",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "@tailwindcss/postcss",
+      "version": "^4.3.3",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "@types/node",
+      "version": "^22.18.0",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "@types/react",
+      "version": "^19.2.0",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "@types/react-dom",
+      "version": "^19.2.0",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "@types/semver",
+      "version": "^7.7.0",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "drizzle-kit",
+      "version": "^0.31.11",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "esbuild",
+      "version": "^0.28.2",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "tailwindcss",
+      "version": "^4.3.3",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "tsx",
+      "version": "^4.23.15",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "typescript",
+      "version": "^5.9.3",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "vitest",
+      "version": "^5.0.5",
+      "kind": "dev",
+      "ecosystem": "node"
+    },
+    {
+      "name": "wrangler",
+      "version": "4.148.0",
+      "kind": "dev",
+      "ecosystem": "node"
+    }
+  ],
+  "scripts": {
+    "build": "next build",
+    "build:worker": "esbuild scripts/worker.ts --bundle --platform=node --format=cjs --target=node22 --outfile=dist/worker.cjs",
+    "create:admin": "tsx scripts/create-admin.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx scripts/seed.ts",
+    "dev": "next dev",
+    "purge:sources": "tsx scripts/purge-sources.ts",
+    "scan:benchmark": "tsx scripts/benchmark.ts",
+    "start": "next start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "worker": "tsx scripts/worker.ts"
+  },
+  "directories": [
+    {
+      "path": ".open-next",
+      "purpose": "Project files",
+      "fileCount": 183,
+      "languages": [
+        "JavaScript",
+        "TypeScript",
+        "Python"
+      ],
+      "fingerprint": "409e90adc1e296c4"
+    },
+    {
+      "path": ".open-next/server-functions",
+      "purpose": "Project files",
+      "fileCount": 133,
+      "languages": [
+        "JavaScript",
+        "TypeScript",
+        "Python"
+      ],
+      "fingerprint": "f3ed81faa0b02de3"
+    },
+    {
+      "path": "src",
+      "purpose": "Application source",
+      "fileCount": 97,
+      "languages": [
+        "TypeScript"
+      ],
+      "fingerprint": "2bcc75742a8e4d63"
+    },
+    {
+      "path": "src/app",
+      "purpose": "Application code",
+      "fileCount": 36,
+      "languages": [
+        "TypeScript"
+      ],
+      "fingerprint": "d784564c212e3fe5"
+    },
+    {
+      "path": "src/lib",
+      "purpose": "Shared library code",
+      "fileCount": 36,
+      "languages": [
+        "TypeScript"
+      ],
+      "fingerprint": "ac5dc3410b5e13f4"
+    },
+    {
+      "path": "freebuff-sites-build",
+      "purpose": "Project files",
+      "fileCount": 21,
+      "languages": [
+        "JavaScript"
+      ],
+      "fingerprint": "7a74f57c49fbdd6a"
+    },
+    {
+      "path": "src/components",
+      "purpose": "UI components",
+      "fileCount": 21,
+      "languages": [
+        "TypeScript"
+      ],
+      "fingerprint": "c18b758317e45e9d"
+    },
+    {
+      "path": ".open-next/assets",
+      "purpose": "Static assets",
+      "fileCount": 19,
+      "languages": [
+        "JavaScript"
+      ],
+      "fingerprint": "78b128bcd6d87c3d"
+    },
+    {
+      "path": "freebuff-sites-build/assets",
+      "purpose": "Static assets",
+      "fileCount": 19,
+      "languages": [
+        "JavaScript"
+      ],
+      "fingerprint": "78b128bcd6d87c3d"
+    },
+    {
+      "path": ".open-next/cloudflare-templates",
+      "purpose": "Project files",
+      "fileCount": 16,
+      "languages": [
+        "TypeScript",
+        "JavaScript"
+      ],
+      "fingerprint": "9b44310d8bccbad9"
+    },
+    {
+      "path": "benchmarks",
+      "purpose": "Project files",
+      "fileCount": 12,
+      "languages": [
+        "JavaScript",
+        "Python"
+      ],
+      "fingerprint": "412e73dd3f2ace79"
+    },
+    {
+      "path": ".open-next/.build",
+      "purpose": "Project files",
+      "fileCount": 7,
+      "languages": [
+        "JavaScript"
+      ],
+      "fingerprint": "9aada505357cbfbf"
+    },
+    {
+      "path": "benchmarks/vulnerable-app",
+      "purpose": "Project files",
+      "fileCount": 7,
+      "languages": [
+        "JavaScript",
+        "Python"
+      ],
+      "fingerprint": "3108630fbfad69d7"
+    },
+    {
+      "path": "benchmarks/clean-app",
+      "purpose": "Project files",
+      "fileCount": 5,
+      "languages": [
+        "JavaScript",
+        "Python"
+      ],
+      "fingerprint": "bd036ffefcc473b3"
+    },
+    {
+      "path": "scripts",
+      "purpose": "Automation scripts",
+      "fileCount": 5,
+      "languages": [
+        "TypeScript"
+      ],
+      "fingerprint": "6438eef5dd3295c9"
+    },
+    {
+      "path": ".open-next/cloudflare",
+      "purpose": "Project files",
+      "fileCount": 4,
+      "languages": [
+        "JavaScript"
+      ],
+      "fingerprint": "51ead9264cd01f18"
+    }
+  ],
+  "entrypoints": [],
+  "tests": {
+    "framework": "Vitest",
+    "location": "co-located *.test files",
+    "pattern": "*.test.*",
+    "fileCount": 4
+  },
+  "conventions": {
+    "fileNaming": "lowercase",
+    "moduleSystem": "CommonJS",
+    "formatting": [],
+    "testNaming": "co-located *.test files",
+    "importAlias": "@/*",
+    "errorHandling": "custom Error subclasses"
+  },
+  "doNotTouch": []
+}

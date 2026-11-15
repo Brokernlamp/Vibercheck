@@ -1,0 +1,17 @@
+node_modules
+.next
+.open-next
+.wrangler
+freebuff-sites-build
+dist
+.data
+.git
+.github
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+coverage
+backups
+.DS_Store
+npm-debug.log*

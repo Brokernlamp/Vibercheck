@@ -1,0 +1,6 @@
+{
+  "name": "acme-widget",
+  "version": "2.3.1",
+  "license": "GPL-3.0",
+  "main": "index.js"
+}

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "targets": [
+    "claude",
+    "cursor",
+    "agents"
+  ],
+  "failOn": "high",
+  "maxDependencyFacts": 12,
+  "ignore": [],
+  "notes": [],
+  "doNotTouch": []
+}

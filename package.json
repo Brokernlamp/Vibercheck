@@ -1,0 +1,49 @@
+{
+  "name": "vibecheck",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Productized security audit platform for AI-generated code — MVP prototype",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx scripts/seed.ts",
+    "create:admin": "tsx scripts/create-admin.ts",
+    "worker": "tsx scripts/worker.ts",
+    "build:worker": "esbuild scripts/worker.ts --bundle --platform=node --format=cjs --target=node22 --outfile=dist/worker.cjs",
+    "scan:benchmark": "tsx scripts/benchmark.ts",
+    "purge:sources": "tsx scripts/purge-sources.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.4",
+    "fflate": "^0.8.3",
+    "lucide-react": "^1.61.0",
+    "next": "16.4.3",
+    "postgres": "^3.4.9",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "semver": "^7.8.5",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.12",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22.18.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/semver": "^7.7.0",
+    "drizzle-kit": "^0.31.11",
+    "esbuild": "^0.28.2",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5",
+    "wrangler": "4.148.0"
+  }
+}

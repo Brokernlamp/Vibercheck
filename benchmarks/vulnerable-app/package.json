@@ -1,0 +1,15 @@
+{
+  "name": "acme-vibe-app",
+  "version": "1.4.0",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "axios": "0.21.1",
+    "express": "4.16.0",
+    "jsonwebtoken": "8.5.1",
+    "lodash": "4.17.15",
+    "minimist": "1.2.5",
+    "mongodb": "4.17.0",
+    "next": "14.2.0"
+  }
+}

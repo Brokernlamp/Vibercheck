@@ -1,0 +1,11 @@
+name: deploy
+on: [push]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish
+        env:
+          GITHUB_TOKEN: ghp_1234567890abcdefghijklmnopqrstuvwxyz
+        run: ./scripts/deploy.sh

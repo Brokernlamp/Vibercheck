@@ -1,0 +1,201 @@
+# Product Requirements Document — Productized AI-Code Security Audit Platform
+
+*Working name: "VibeCheck" (placeholder, rename freely) · Version 1.0 · Prepared for development handover to consultancy*
+
+## 1. Executive Summary
+
+VibeCheck is a platform that powers a productized security-audit service for teams shipping AI-generated ("vibe-coded") software. It combines automated scanning (OWASP-style vulnerability checks, secrets detection, dependency/license risk, and AI-code-specific vulnerability patterns) with a mandatory human review layer, and delivers a client-facing report and remediation portal. Unlike enterprise tools (Veracode, Snyk, FOSSA) priced for large organizations, VibeCheck targets startups, digital agencies, and SMBs who ship fast with AI coding tools and have no dedicated security function, but need an affordable, fast, trustworthy audit. The business model is service-led: the platform is the delivery mechanism for audits sold directly to clients, not a self-serve SaaS at launch.
+
+## 2. Problem Statement
+
+- Independent research (Veracode's GenAI Code Security Report, the Cloud Security Alliance, and Georgia Tech's Vibe Security Radar) has repeatedly found that roughly 45% of AI-generated code samples fail basic OWASP Top 10 security checks, that AI-assisted commits introduce secrets at roughly double the rate of human-only code, and that confirmed CVEs traced to AI-generated code rose sharply through early 2026.
+- Teams using AI coding agents (Claude Code, Cursor, Lovable, Replit, etc.) are shipping to production faster than they can review, and most have no security review process designed for this failure profile.
+- Enterprise-grade security tooling and audit firms are priced and positioned for large organizations with existing security teams, not for a 10-50 person startup or a digital agency shipping client work.
+- There is currently no affordable, fast, clearly-scoped, AI-code-aware audit product aimed at this underserved middle tier. That is the gap this product fills.
+
+## 3. Goals & Objectives
+
+**Primary goal:** deliver a trustworthy, fast, affordable security audit of AI-generated codebases, backed by a tool that makes the audit process efficient enough to sell at small-business price points without sacrificing a human review step.
+
+**Secondary goals:**
+
+- Build a repeatable, productized service (fixed scope, fixed price tiers) rather than open-ended security consulting.
+- Create a continuous-monitoring upsell path so one-time audit clients can become recurring revenue.
+- Keep the automated layer efficient enough that one analyst can review and deliver several audits per week.
+
+**Non-goals:**
+
+- Replacing a full enterprise security program, penetration testing, or compliance certification (SOC2, ISO 27001) services.
+- Guaranteeing zero vulnerabilities after remediation — the product finds and prioritizes issues; it does not certify a codebase as risk-free.
+- Fully autonomous (no human reviewer) auditing at launch.
+
+## 4. Target Customers & Personas
+
+- **Persona A — Startup CTO/engineering lead (10-50 developers).** Ships fast using AI coding tools, has no dedicated security hire, wants a credible pre-launch or pre-fundraising security check without an enterprise price tag or multi-month engagement.
+- **Persona B — Digital agency building client products with AI assistance.** Needs to provide clients with assurance that AI-assisted deliverables meet basic security standards, and wants a white-label-friendly or easily-attributable report to hand to clients.
+- **Persona C — Non-technical or semi-technical founder running a "vibe-coded" product** (built substantially via Lovable, Replit, Cursor, or similar), seeking a pre-launch or pre-funding check they cannot perform themselves.
+
+## 5. Competitive Landscape & Differentiation
+
+- **Veracode, Snyk, Checkmarx:** enterprise-grade SAST/SCA platforms, priced and packaged for organizations with existing security teams; not accessible or appropriately scoped for a 10-50 person company.
+- **FOSSA, Copyleaks:** focus primarily on open-source license compliance and provenance, not full security auditing.
+- **CSA guidance and Georgia Tech's Vibe Security Radar:** research and awareness efforts, not a commercial audit product.
+- **Freelance security consultants:** available but inconsistent in scope, pricing, and turnaround; no standardized report format or remediation tracking.
+- **Differentiation:** VibeCheck is scoped, fixed-price, fast-turnaround, explicitly tuned to AI-generated code's known failure patterns, and productized rather than sold as open-ended consulting hours.
+
+## 6. Scope of Work
+
+### In Scope — Platform/Tool (what the consultancy builds)
+
+- Codebase ingestion via GitHub/GitLab OAuth connection or direct zip upload.
+- Automated scanning engine integrating established open-source tools for SAST, dependency/license scanning (SCA), and secrets detection.
+- A custom rule layer targeting AI-code-specific vulnerability patterns (see Section 7).
+- Risk-scoring engine producing per-finding severity and an aggregate codebase risk score.
+- Auto-generated draft report (executive summary plus technical detail plus remediation guidance).
+- Analyst review dashboard: a human reviewer can confirm, edit, dismiss (mark false positive), or add findings before any report reaches a client.
+- Client-facing portal: view the finalized report, track remediation status per finding, request a re-scan.
+- Re-scan and regression comparison to verify fixes and show risk-score trend over time.
+- Billing integration supporting one-time purchase (audit tiers) and recurring subscription (continuous monitoring tier).
+- Multi-tenant admin view for the operator (you / the consultancy's client) managing multiple client audits at once.
+
+### In Scope — Service Process (context the platform must support, not built as software per se)
+
+- Intake questionnaire capturing stack, deployment target, and compliance context before scanning begins.
+- A defined, mandatory analyst-review step between automated scan and client-facing report delivery.
+- A defined re-scan/verification step once a client marks findings as remediated.
+
+### Out of Scope (all phases)
+
+- Penetration testing, red-teaming, or social-engineering assessments.
+- Compliance certification (SOC2, ISO 27001, PCI-DSS attestation) — the product may inform readiness for these but does not issue certifications.
+- Fully autonomous report delivery with no human review step, at any phase covered by this document.
+- Legal drafting of the client-facing service agreement, liability waiver, or terms of service — required separately from a qualified lawyer (see Section 17), though the platform must support attaching a signed agreement before report delivery.
+
+## 7. Functional Requirements
+
+| ID | Requirement |
+| --- | --- |
+| FR-1 | Client or operator can connect a repository (GitHub/GitLab OAuth) or upload a codebase archive for scanning. |
+| FR-2 | System runs static analysis checks mapped to the OWASP Top 10 categories (injection, broken access control, cryptographic failures, etc.). |
+| FR-3 | System runs dependency and open-source license scanning (software composition analysis) and flags restrictively licensed or known-vulnerable packages. |
+| FR-4 | System runs secrets/credential detection across the full codebase and git history where accessible. |
+| FR-5 | System applies a custom ruleset targeting AI-generated-code-specific patterns, including at minimum: missing authorization checks on generated CRUD endpoints, string-concatenated database queries typical of LLM output, hardcoded default credentials or API keys, and overly permissive default configurations. |
+| FR-6 | Where the codebase includes MCP server implementations, system applies an additional ruleset checking for missing authentication, overly broad tool permissions, and known MCP vulnerability patterns. |
+| FR-7 | System assigns a severity rating to each finding and computes an aggregate risk score for the codebase. |
+| FR-8 | System generates a draft report (executive summary, per-finding technical detail, suggested remediation) from the automated findings. |
+| FR-9 | Analyst dashboard allows a human reviewer to confirm, edit, dismiss, or add findings, and to add free-text commentary, before the report is finalized. |
+| FR-10 | No report reaches a client in finalized form without passing through the analyst-review step (hard requirement, not configurable per client). |
+| FR-11 | Client portal displays the finalized report, allows marking individual findings as "remediated," and allows requesting a re-scan. |
+| FR-12 | System supports re-scanning and produces a comparison against the prior scan, showing resolved, new, and outstanding findings and the updated risk score. |
+| FR-13 | Billing module supports one-time payment for discrete audit tiers and recurring subscription billing for the continuous-monitoring tier (Stripe or equivalent). |
+| FR-14 | Operator admin view lists all client engagements, their current status (intake, scanning, under review, delivered, remediation in progress, closed), and basic engagement metadata. |
+| FR-15 (Phase 2) | Continuous-monitoring clients can connect a CI webhook so scans run automatically on new pull requests, with findings surfaced before merge. |
+
+## 8. Non-Functional Requirements
+
+- **Data confidentiality (critical).** Client source code is highly sensitive. The platform must encrypt data at rest and in transit, enforce strict least-privilege access controls, and run each client's scan in an isolated environment (container or VM per job, not a shared multi-tenant scanning process).
+- **Data retention.** A clear, documented retention policy is required — recommend automatic deletion of client source code after a defined window (e.g., 30-90 days) unless the client is on the continuous-monitoring tier, in which case retention is scoped to what is needed for re-scans only.
+- **No training use.** Client code must never be used to train or fine-tune any model, and this must be stated explicitly in the client-facing agreement and enforced technically (e.g., no retention by any third-party LLM API used, where applicable).
+- **Auditability.** Full internal audit log of who (which operator/analyst account) accessed or modified a given client's findings and report.
+- **Performance.** Automated scan turnaround target (e.g., preliminary automated results within 4-24 hours for a codebase under a defined size threshold — to be set during design) so the analyst-review step, not the scan itself, is the bottleneck.
+- **Scalability.** Must support multiple concurrent client scans without cross-contamination of data or results.
+- **Compliance posture.** The platform should be built with SOC2-readiness practices (access logging, least privilege, documented policies) from the outset, even though certification itself is out of scope at MVP.
+
+## 9. Technical Architecture & Recommended Stack (guidance, not mandate)
+
+- **Scanning engine:** orchestrate established open-source tools rather than building detection from scratch — e.g., Semgrep and language-specific linters/security plugins for SAST; OWASP Dependency-Check, Trivy, or Grype/Syft for SCA; Gitleaks or TruffleHog for secrets detection — wrapped by a custom rules layer implementing the AI-code-specific checks in Section 7 (FR-5, FR-6).
+- **Job orchestration:** asynchronous job queue (e.g., Redis-backed queue) so scans run in isolated, disposable containers per client job.
+- **Backend:** Python or Node.js API layer managing intake, job orchestration, findings storage, and report generation.
+- **Frontend:** a client-facing portal and a separate analyst dashboard (can share a codebase with role-based access), built with a standard modern web framework (e.g., React/Next.js).
+- **Database:** Postgres for findings, engagement metadata, and audit logs.
+- **Report generation:** templated PDF/web report generation (e.g., a headless-browser-based renderer or a dedicated PDF library).
+- **Billing:** Stripe (or equivalent) for both one-time and subscription billing.
+- **Hosting/isolation:** per-job containerization (e.g., Docker, ephemeral containers torn down after each scan) on a cloud provider with strong access-control and encryption defaults.
+
+## 10. Service Workflow (business process the platform must support end to end)
+
+1. **Intake:** client signs up, connects a repository or uploads code, and completes a short questionnaire (stack, deployment target, any known compliance requirements).
+2. **Automated scan:** platform runs the scanning engine and produces preliminary, unreviewed findings.
+3. **Analyst review:** a human analyst (the operator, or their team) reviews findings in the dashboard, confirms or dismisses each one, adds commentary, and prioritizes remediation order.
+4. **Report delivery:** finalized report is published to the client portal; optionally paired with a live walkthrough call (process detail, not a platform requirement).
+5. **Remediation:** client fixes issues and marks findings as remediated in the portal.
+6. **Re-scan and verification:** platform re-scans, compares against the prior run, and confirms which findings are resolved.
+7. **Upsell path:** client is offered a continuous-monitoring subscription for scheduled re-scans and PR-triggered checks going forward.
+
+## 11. Packaging & Pricing Tiers (business context informing what the platform must support)
+
+- **Quick Scan:** automated findings only, lighter-touch analyst pass, fixed price (illustrative: $299-499), fast turnaround (e.g., 48 hours).
+- **Full Audit:** automated scan plus full analyst review and detailed remediation guidance, fixed price scaled by codebase size (illustrative: $1,500-5,000).
+- **Continuous Monitoring:** monthly retainer (illustrative: $299-999/month) covering scheduled re-scans, PR-triggered checks via CI integration, and priority turnaround.
+- The platform must support both one-time checkout and subscription billing flows, and must support upgrading a client from a one-time tier into the subscription tier without re-doing intake.
+
+## 12. Success Metrics / KPIs
+
+- Average time from intake to finalized report delivered, by tier.
+- Finding accuracy: tracked false-positive rate as judged by analyst dismissals, to be monitored and reduced over time.
+- Number of audits delivered per month and per analyst (a measure of how much the tool reduces manual review time).
+- Conversion rate from Quick Scan to Full Audit, and from either into Continuous Monitoring.
+- Client-reported satisfaction (CSAT/NPS) per completed audit.
+- Monthly recurring revenue and retention on the Continuous Monitoring tier.
+
+## 13. Deliverables Expected From Consultancy
+
+1. Technical design document and architecture diagram, reviewed and signed off before implementation begins.
+2. Working scanning engine integrating the specified open-source SAST/SCA/secrets tools, plus a custom ruleset implementing at minimum the AI-code-specific checks listed under FR-5 and FR-6 (target an initial ruleset of 15-20 distinct, named checks, to be finalized during design).
+3. Client-facing web portal supporting authentication, repository connection or upload, report viewing, and remediation tracking.
+4. Analyst review dashboard supporting confirm/edit/dismiss/add-finding workflows and commentary, with the hard gate that no report reaches a client without passing through this step.
+5. Automated report generation (PDF and/or web view) from analyst-approved findings.
+6. Billing integration (one-time checkout and subscription billing) via Stripe or an agreed equivalent.
+7. Multi-tenant operator/admin panel for managing multiple concurrent client engagements.
+8. CI integration (GitHub Action or equivalent webhook) supporting the Continuous Monitoring tier's PR-triggered scans.
+9. Documentation: technical architecture notes, an admin/analyst runbook, and client-facing help documentation.
+10. A validated test suite that measures scanning accuracy (true/false positive rates) against a benchmark set of sample repositories with known, seeded vulnerabilities.
+11. A pre-launch security review of the platform itself, performed by or verified with the consultancy, given that the platform will hold client source code — this is a hard requirement, not optional.
+12. Full source code and intellectual property transfer, including repository access and removal of any consultancy-retained credentials upon handover.
+13. A defined post-launch support window (length to be negotiated — e.g., 30/60/90 days of bug-fix support).
+
+## 14. Project Timeline & Milestones (illustrative — consultancy to propose final schedule)
+
+- **Phase 1 (MVP scanning engine, draft report generation):** 6-8 weeks — discovery and spec sign-off, scanning engine integration, AI-code-specific ruleset v1, draft report generation.
+- **Phase 2 (client portal and analyst dashboard):** 4-6 weeks, following MVP validation against seeded sample repositories.
+- **Phase 3 (billing, CI integration for Continuous Monitoring, multi-tenant admin):** 4-6 weeks.
+
+## 15. Assumptions & Constraints
+
+- Final budget and team size are to be defined in the consultancy's proposal against this document.
+- The product relies on integrating existing open-source scanning tools; their licenses must be verified as compatible with commercial, for-profit use before integration (a hard pre-build check, not an assumption to defer).
+- A human analyst-review step is assumed to remain part of the workflow for the foreseeable future; this document does not assume or plan for fully autonomous report delivery.
+- An acceptable false-positive rate should be agreed upon and measured against seeded benchmark repositories before the platform is used on real client codebases.
+
+## 16. Risks & Mitigations
+
+| Risk | Mitigation |
+| --- | --- |
+| False positives or missed findings erode client trust | Mandatory analyst-review gate before any report is delivered (FR-10); track and actively reduce false-positive rate over time. |
+| Handling client source code creates significant liability and security exposure | Strict data-handling policy (encryption, isolation, limited retention); business-side cyber liability insurance (outside the consultancy's dev scope, but a precondition for launch); pre-launch security review of the platform itself. |
+| Open-source scanning tool licenses may restrict commercial use | Audit the license of every integrated tool before build begins; select alternatives where a license conflicts with commercial use. |
+| Clients may expect a guarantee of "no vulnerabilities" after remediation | Build clear scope-of-audit and limitation-of-liability language into the report template itself, in addition to the separate legal service agreement. |
+| Analyst review step becomes the throughput bottleneck as client volume grows | Design the analyst dashboard explicitly to minimize review time per finding (triage views, bulk actions, confidence scoring) from the outset, not as a later optimization. |
+
+## 17. Legal & Compliance Note (outside the consultancy's development scope, but a precondition for launch)
+
+Before this platform is used on real client engagements, a qualified lawyer should draft the client-facing service agreement, scope-of-audit disclaimer, and limitation-of-liability terms. The platform must provide a mechanism (e.g., a required checkbox or e-signature step) for a client to accept these terms before a report is delivered, but the legal content itself is not a deliverable of this development engagement.
+
+## 18. Acceptance Criteria (MVP)
+
+- [ ] Platform successfully ingests a repository via OAuth connection and via direct upload.
+- [ ] Scanning engine correctly flags all seeded vulnerabilities in an agreed benchmark set of sample repositories (specific target true-positive and false-positive rates to be set during design sign-off).
+- [ ] Analyst dashboard allows confirming, editing, dismissing, and adding findings, and no report can be marked "finalized" without this step having occurred.
+- [ ] Client portal correctly displays a finalized report and allows marking findings as remediated.
+- [ ] Re-scan correctly identifies which previously flagged findings are resolved versus still outstanding.
+- [ ] Billing module successfully processes both a one-time Quick Scan purchase and a Continuous Monitoring subscription in a test environment.
+- [ ] Full documentation allows an analyst unfamiliar with the build to operate the review dashboard without further support.
+
+## 19. Appendix: Reference Standards & Glossary
+
+- **OWASP Top 10:** a standard awareness list of the most critical web application security risks, used as the baseline category set for automated findings.
+- **SAST (Static Application Security Testing):** analyzing source code without executing it to find security weaknesses.
+- **SCA (Software Composition Analysis):** scanning third-party dependencies for known vulnerabilities and license obligations.
+- **Secrets detection:** scanning code and history for accidentally committed credentials, API keys, or tokens.
+- **MCP (Model Context Protocol):** an open standard connecting AI agents to external tools and data sources; introduces its own class of vulnerabilities (authentication gaps, overly broad tool permissions) distinct from traditional web application risks.
+- **False positive / false negative:** a flagged issue that is not actually a problem, versus a real problem the scan fails to flag — both are tracked as core quality metrics for this product.

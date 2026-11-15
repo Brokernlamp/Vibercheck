@@ -1,0 +1,58 @@
+# VibeCheck — LOCAL DEVELOPMENT ONLY
+# Binds all services to 127.0.0.1. Do not expose to a public network.
+# Usage:
+#   docker compose -f docker-compose.local.yml up -d db
+#   npm run db:push && npm run db:seed
+#   npm run dev
+#
+# To also run the scan worker in Docker:
+#   docker compose -f docker-compose.local.yml up -d db worker
+#   SCAN_EXECUTION=worker npm run dev
+
+name: vibecheck-local
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: vibecheck
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: localdevonly
+    ports:
+      # Bind to localhost only — not accessible from outside the machine.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata_local:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vibecheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  worker:
+    # Runs the scan worker against the local database.
+    # Requires the app image to be built first: docker compose -f docker-compose.local.yml build worker
+    build:
+      context: .
+      target: worker
+    environment:
+      DATABASE_URL: postgres://postgres:localdevonly@db:5432/vibecheck
+      SESSION_SECRET: local-dev-only-change-me-before-any-deployment-32bytes
+      SCAN_EXECUTION: worker
+      OSV_OFFLINE: "0"
+      DATA_DIR: /app/.data
+      LOG_LEVEL: debug
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - sources_local:/app/.data
+    stop_grace_period: 2m
+    restart: unless-stopped
+    profiles:
+      - worker
+
+volumes:
+  pgdata_local:
+  sources_local:
