@@ -41,4 +41,9 @@ describe("OWASP taxonomy labels", () => {
       expect(cweForRule(rule.id).every((cwe) => /^CWE-\d+$/.test(cwe))).toBe(true);
     }
   });
+
+  it("maps debug and JWT findings to their distinct weakness types", () => {
+    expect(cweForRule("AI-DEBUG-001")).toContain("CWE-489");
+    expect(cweForRule("AI-JWT-001")).toContain("CWE-798");
+  });
 });

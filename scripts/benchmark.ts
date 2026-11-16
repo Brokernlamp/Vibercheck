@@ -46,7 +46,10 @@ async function main() {
     }
   }
   console.log(
-    `\nBuilt-in checks exercised by the vulnerable fixture: ${seen.size}/${EXPECTED.length} (fixture coverage only; not accuracy or recall)`,
+    `\nExpected vulnerable-fixture rule assertions: ${missing.length === 0 ? "PASS" : "FAIL"}`,
+  );
+  console.log(
+    "This fixture is a regression check, not an accuracy, recall, or coverage benchmark.",
   );
   if (missing.length) {
     console.log(`Missing expected rules:\n  ${missing.join("\n  ")}`);

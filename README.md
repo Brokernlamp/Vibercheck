@@ -128,6 +128,23 @@ Do not enable it in Cloudflare/edge deployments or any runtime that cannot spawn
 the pinned local CLI; use a Node.js scanner worker instead. A Semgrep warning means
 that part of the scan did not complete and must not be interpreted as a clean result.
 
+Community rules were evaluated locally only; they are not shipped or fetched by the
+application. The tested registry YAML snapshots are identified by SHA-256 (downloaded
+content must match these hashes to reproduce this run):
+
+- Semgrep CLI `1.185.0`
+- `p/secrets`: `d1afb323ed493cf9d3ee5044447b989debf033b2b7cc8208662a81b8c162c66a`
+- `p/owasp-top-ten`: `59f969f78c0405fcce4ad00d6c24a73b736defb3ae34f6c92a168465cd8d1cbd`
+
+On `benchmarks/vulnerable-app`, the pinned packs produced 12 raw matches with no
+analysis errors. VibeCheck's normalizer and location/CWE deduper retained 4 new
+finding rows beside the 53 built-in findings; two Python SQL matches describe the
+same injection, so the distinct additional issues were a mutable GitHub Actions
+tag, Python SQL injection, and unescaped remote response content returned as HTML.
+Semgrep's defaults skipped `vendor/acme-widget`; `p/secrets` found only the JWT
+secret already detected by VibeCheck. This fixture result is a regression exercise,
+not an accuracy, recall, or coverage benchmark.
+
 The repository includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that
 runs typecheck, tests, scanner benchmarks, and the production build on pushes and
 pull requests.

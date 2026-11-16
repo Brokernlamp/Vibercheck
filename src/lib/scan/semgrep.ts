@@ -27,7 +27,7 @@ export const SEMGREP_RULES = `rules:
     message: Request-controlled data reaches a database query.
     metadata:
       category: Injection
-      confidence: 0.86
+      confidence: 86
       cwe: CWE-89
       owasp: A05:2025
       remediation: Use a parameterized query and pass untrusted values separately from SQL text.
@@ -37,9 +37,11 @@ export const SEMGREP_RULES = `rules:
           - pattern: $REQ.body.$FIELD
           - pattern: $REQ.params.$FIELD
     pattern-sinks:
-      - pattern-either:
+      - patterns:
+        - pattern-either:
           - pattern: $DB.query($SQL, ...)
           - pattern: $DB.execute($SQL, ...)
+        - focus-metavariable: $SQL
 
   - id: vibecheck.js.command-injection
     mode: taint
@@ -48,7 +50,7 @@ export const SEMGREP_RULES = `rules:
     message: Request-controlled data reaches a shell command.
     metadata:
       category: Command injection
-      confidence: 0.86
+      confidence: 86
       cwe: CWE-78
       owasp: A05:2025
       remediation: Avoid shell command construction; use a fixed executable and validated argument array with shell disabled.
@@ -58,9 +60,11 @@ export const SEMGREP_RULES = `rules:
           - pattern: $REQ.body.$FIELD
           - pattern: $REQ.params.$FIELD
     pattern-sinks:
-      - pattern-either:
+      - patterns:
+        - pattern-either:
           - pattern: child_process.exec($CMD, ...)
           - pattern: exec($CMD, ...)
+        - focus-metavariable: $CMD
 
   - id: vibecheck.py.sql-injection
     mode: taint
@@ -69,7 +73,7 @@ export const SEMGREP_RULES = `rules:
     message: Request-controlled data reaches a database query.
     metadata:
       category: Injection
-      confidence: 0.86
+      confidence: 86
       cwe: CWE-89
       owasp: A05:2025
       remediation: Use a parameterized query and pass untrusted values separately from SQL text.
@@ -81,7 +85,9 @@ export const SEMGREP_RULES = `rules:
           - pattern: request.GET.get(...)
           - pattern: request.POST.get(...)
     pattern-sinks:
-      - pattern: $CURSOR.execute($SQL, ...)
+      - patterns:
+          - pattern: $CURSOR.execute($SQL, ...)
+          - focus-metavariable: $SQL
 
   - id: vibecheck.py.command-injection
     mode: taint
@@ -90,7 +96,7 @@ export const SEMGREP_RULES = `rules:
     message: Request-controlled data reaches a shell command.
     metadata:
       category: Command injection
-      confidence: 0.86
+      confidence: 86
       cwe: CWE-78
       owasp: A05:2025
       remediation: Avoid shell command construction; use a fixed executable and validated argument array with shell disabled.
@@ -102,10 +108,12 @@ export const SEMGREP_RULES = `rules:
           - pattern: request.GET.get(...)
           - pattern: request.POST.get(...)
     pattern-sinks:
-      - pattern-either:
-          - pattern: subprocess.run($CMD, ..., shell=True, ...)
-          - pattern: subprocess.Popen($CMD, ..., shell=True, ...)
-          - pattern: os.system($CMD)
+      - patterns:
+          - pattern-either:
+              - pattern: subprocess.run($CMD, ..., shell=True, ...)
+              - pattern: subprocess.Popen($CMD, ..., shell=True, ...)
+              - pattern: os.system($CMD)
+          - focus-metavariable: $CMD
 `;
 
 interface SemgrepMetadata {
@@ -148,12 +156,23 @@ function cweIds(value: unknown): string[] {
 
 function owaspId(value: unknown): string | null {
   const values = Array.isArray(value) ? value : [value];
+  let unversionedCategory: string | null = null;
   for (const item of values) {
     if (typeof item !== "string") continue;
-    const match = /\b(A(?:0[1-9]|10))(?:\s*:\s*2025)?\b/i.exec(item);
-    if (match) return match[1]!.toUpperCase();
+    const match = /\b(A(?:0[1-9]|10))(?:\s*:\s*(\d{4}))?\b/i.exec(item);
+    if (!match) continue;
+    const category = match[1]!.toUpperCase();
+    if (match[2] === "2025") return category;
+    if (match[2] === undefined) unversionedCategory ??= category;
   }
-  return null;
+  return unversionedCategory;
+}
+
+function stableRuleId(value: unknown): string {
+  if (typeof value !== "string") return "semgrep.unknown-rule";
+  const marker = "vibecheck.";
+  const markerIndex = value.lastIndexOf(marker);
+  return markerIndex >= 0 ? value.slice(markerIndex) : value;
 }
 
 function severity(value: unknown): RawFinding["severity"] {
@@ -175,7 +194,8 @@ function severity(value: unknown): RawFinding["severity"] {
 
 function confidence(value: unknown): number {
   if (typeof value === "number" && Number.isFinite(value)) {
-    return Math.round(Math.max(0, Math.min(1, value)) * 100);
+    const percent = value <= 1 ? value * 100 : value;
+    return Math.round(Math.max(0, Math.min(100, percent)));
   }
   if (typeof value === "string") {
     const normalized = value.toUpperCase();
@@ -225,7 +245,7 @@ export function normalizeSemgrepResults(
   root: string,
   files: FileContext[],
   results: unknown,
-): { findings: RawFinding[]; skipped: number } {
+): { findings: RawFinding[]; skipped: number; unmappedOwasp: number } {
   if (!Array.isArray(results)) {
     throw new Error("Semgrep JSON output did not contain a results array");
   }
@@ -233,6 +253,7 @@ export function normalizeSemgrepResults(
   const filesByPath = new Map(files.map((file) => [file.path, file]));
   const findings: RawFinding[] = [];
   let skipped = 0;
+  let unmappedOwasp = 0;
 
   for (const value of results) {
     if (!isRecord(value)) {
@@ -243,14 +264,14 @@ export function normalizeSemgrepResults(
     const filePath = relativePath(root, result.path);
     const file = filePath ? filesByPath.get(filePath) : undefined;
     const metadata = result.extra?.metadata ?? {};
-    const ruleId =
-      typeof result.check_id === "string" ? result.check_id : "semgrep.unknown-rule";
+    const ruleId = stableRuleId(result.check_id);
     const cwe = cweIds(metadata.cwe);
-    const owasp = owaspId(metadata.owasp);
-    if (!filePath || !file || cwe.length === 0 || !owasp) {
+    const mappedOwasp = owaspId(metadata.owasp);
+    if (!filePath || !file || cwe.length === 0) {
       skipped += 1;
       continue;
     }
+    if (!mappedOwasp) unmappedOwasp += 1;
 
     const lineStart = lineNumber(result.start?.line, 1);
     const lineEnd = Math.max(lineStart, lineNumber(result.end?.line, lineStart));
@@ -272,7 +293,7 @@ export function normalizeSemgrepResults(
       title: redactSnippetText(title),
       severity: severity(result.extra?.severity),
       cwe,
-      owasp,
+      owasp: mappedOwasp ?? "N/A",
       category:
         typeof metadata.category === "string"
           ? redactSnippetText(metadata.category)
@@ -288,28 +309,33 @@ export function normalizeSemgrepResults(
     });
   }
 
-  return { findings, skipped };
-}
-
-function findingDuplicates(existing: RawFinding, candidate: RawFinding): boolean {
-  return (
-    existing.filePath === candidate.filePath &&
-    existing.lineStart === candidate.lineStart &&
-    existing.cwe.some((id) => candidate.cwe.includes(id))
-  );
+  return { findings, skipped, unmappedOwasp };
 }
 
 export function mergeSemgrepFindings(
   existing: RawFinding[],
   semgrep: RawFinding[],
 ): RawFinding[] {
-  return [
-    ...existing,
-    ...semgrep.filter(
-      (candidate) =>
-        !existing.some((finding) => findingDuplicates(finding, candidate)),
-    ),
-  ];
+  const merged = [...existing];
+  const cwesByLocation = new Map<string, Set<string>>();
+
+  for (const finding of existing) {
+    const key = `${finding.filePath}\0${finding.lineStart}`;
+    const cwes = cwesByLocation.get(key) ?? new Set<string>();
+    finding.cwe.forEach((cwe) => cwes.add(cwe));
+    cwesByLocation.set(key, cwes);
+  }
+
+  for (const candidate of semgrep) {
+    const key = `${candidate.filePath}\0${candidate.lineStart}`;
+    const existingCwes = cwesByLocation.get(key) ?? new Set<string>();
+    if (candidate.cwe.some((cwe) => existingCwes.has(cwe))) continue;
+    merged.push(candidate);
+    candidate.cwe.forEach((cwe) => existingCwes.add(cwe));
+    cwesByLocation.set(key, existingCwes);
+  }
+
+  return merged;
 }
 
 export interface SemgrepScanResult {
@@ -364,6 +390,8 @@ export async function scanWithSemgrep(
         configPath,
         "--json",
         "--metrics=off",
+        "--disable-version-check",
+        "--no-git-ignore",
         "--timeout",
         "20",
         ".",
@@ -391,7 +419,12 @@ export async function scanWithSemgrep(
     );
     if (normalized.skipped > 0) {
       warnings.push(
-        `${normalized.skipped} Semgrep result(s) were omitted because required CWE/OWASP metadata or a source path was missing.`,
+        `${normalized.skipped} Semgrep result(s) were omitted because CWE metadata or a source path was missing.`,
+      );
+    }
+    if (normalized.unmappedOwasp > 0) {
+      warnings.push(
+        `${normalized.unmappedOwasp} Semgrep finding(s) had no OWASP Top 10:2025 mapping and are labeled N/A.`,
       );
     }
     if (Array.isArray(payload.errors) && payload.errors.length > 0) {

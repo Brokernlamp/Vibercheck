@@ -36,6 +36,13 @@
       "when": 1794743478542,
       "tag": "0004_curious_black_bird",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794856411031,
+      "tag": "0005_debug_jwt_cwe",
+      "breakpoints": true
     }
   ]
 }

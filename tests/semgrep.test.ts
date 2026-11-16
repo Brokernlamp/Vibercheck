@@ -84,6 +84,36 @@ describe("Semgrep result normalization", () => {
     expect(normalized.skipped).toBe(2);
   });
 
+  it("uses 2025 OWASP metadata without relabeling 2021-only findings", () => {
+    const file = source("src/users.ts", "db.query(input);");
+    const results = normalizeSemgrepResults(root, [file], [
+      result("src/users.ts", {
+        check_id: "tmp.vibecheck.js.sql-injection",
+        extra: {
+          message: "Finding",
+          severity: "ERROR",
+          metadata: {
+            cwe: "CWE-89",
+            owasp: ["A10:2021 - SSRF", "A01:2025 - Broken Access Control"],
+          },
+        },
+      }),
+      result("src/users.ts", {
+        extra: {
+          message: "Legacy-only mapping",
+          severity: "WARNING",
+          metadata: { cwe: "CWE-89", owasp: "A10:2021 - SSRF" },
+        },
+      }),
+    ]);
+
+    expect(results.findings.map(({ ruleId, owasp }) => ({ ruleId, owasp }))).toEqual([
+      { ruleId: "vibecheck.js.sql-injection", owasp: "A01" },
+      { ruleId: "vibecheck.js.sql-injection", owasp: "N/A" },
+    ]);
+    expect(results.unmappedOwasp).toBe(1);
+  });
+
   it("rejects malformed result collections", () => {
     expect(() => normalizeSemgrepResults(root, [], null)).toThrow(
       "did not contain a results array",
@@ -127,5 +157,6 @@ describe("Semgrep finding merge", () => {
     };
 
     expect(mergeSemgrepFindings([existing], [semgrep])).toEqual([existing]);
+    expect(mergeSemgrepFindings([], [semgrep, semgrep])).toEqual([semgrep]);
   });
 });
