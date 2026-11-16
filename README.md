@@ -171,6 +171,14 @@ use VibeCheck-authored rules on the Semgrep engine. Reconsider the maintained pa
 only with separate written commercial permission. Third-party rule packs require
 their own license and quality review.
 
+A separate built-in-only scan of the same Juice Shop revision scanned 1,137 files
+and produced 246 findings; 198 (80.5%) received at least one ASVS reference, across
+8 distinct requirement IDs. On the internal vulnerable fixture, 23 of 53 findings
+(43.4%) received a reference. These are corpus-specific reference-attachment rates,
+not ASVS verification coverage or a claim about typical production scans; the rate
+depends on the finding mix. The fixture's 10 dependency and 2 license findings had
+no ASVS references.
+
 The repository includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that
 runs typecheck, tests, scanner benchmarks, and the production build on pushes and
 pull requests.
