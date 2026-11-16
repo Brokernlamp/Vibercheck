@@ -67,6 +67,7 @@ standard local PostgreSQL install. Key variables:
 | `APP_URL` | `http://localhost:3000` | Used in internal links |
 | `SCAN_EXECUTION` | `inline` | `inline` = scan in-process; `worker` = separate worker process |
 | `OSV_OFFLINE` | `0` | `1` = use bundled advisory set (no internet required) |
+| `SEMGREP_ENABLED` | `0` | `1` = run the optional pinned local Semgrep backend |
 | `OPEN_ACCESS` | `1` | `1` = no login; `0` = use seeded accounts |
 | `BILLING_MODE` | `free` | `free` = no invoices; `simulated` = test-mode billing flow |
 | `SOLO_MODE` | `1` | `1` = freelancer self-service; `0` = staff-reviewed service workflow |
@@ -102,7 +103,30 @@ The scanner is not universal: its current source rules are strongest for JavaScr
 TypeScript and Python, with selected rules for other languages. Dependency checks
 currently cover npm and pinned Python `requirements*.txt` files. Scans are bounded
 to 2,500 files, 30 MB total, and 1 MB per ordinary file; oversized repositories may
-be partial. Static findings are leads to validate, not proof of exploitability.
+be partial. Static findings are leads to validate, not proof of exploitability. OWASP
+labels use the OWASP Top 10:2025 awareness taxonomy where applicable; they do not
+represent ASVS verification or certification.
+
+### Optional Semgrep backend
+
+The scanner includes a small VibeCheck-authored Semgrep ruleset for JavaScript /
+TypeScript and Python taint patterns. It is disabled by default and does not fetch
+Semgrep Community Rules or other remote rules. In a Node.js scanner environment,
+install the pinned CLI and opt in:
+
+```bash
+python -m pip install -r scanner-requirements.txt
+SEMGREP_ENABLED=1 npm run dev
+```
+
+The same environment setting applies to the scan worker. The backend checks the CLI
+version and reports a warning instead of running with a different version or when
+Semgrep is unavailable. Metrics are disabled; the CLI scans a temporary copy of the
+collected source, which is removed after the scan. Semgrep findings are normalized
+with CWE and OWASP metadata, redacted, and deduplicated against built-in findings.
+Do not enable it in Cloudflare/edge deployments or any runtime that cannot spawn
+the pinned local CLI; use a Node.js scanner worker instead. A Semgrep warning means
+that part of the scan did not complete and must not be interpreted as a clean result.
 
 The repository includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that
 runs typecheck, tests, scanner benchmarks, and the production build on pushes and
@@ -186,7 +210,7 @@ production environment.
 ```bash
 npm run typecheck        # TypeScript strict check — must produce no errors
 npm test                 # Tests: scanner, GitHub integration, review gate, and local behaviors
-npm run scan:benchmark   # 53 findings / 29-of-29 rules on vulnerable fixture; 0 on clean
+npm run scan:benchmark   # Exercises built-in checks against local fixtures; not an accuracy or recall benchmark
 ```
 
 ---

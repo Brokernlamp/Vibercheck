@@ -50,6 +50,12 @@ describe("scanner benchmark", () => {
     expect(missing).toEqual([]);
     expect(result.findings.length).toBeGreaterThanOrEqual(EXPECTED_RULES.length);
     expect(result.score).toBeGreaterThan(60);
+    expect(
+      result.findings.find((finding) => finding.ruleId === "SCA-VULN-001")?.owasp,
+    ).toBe("A03");
+    expect(
+      result.findings.find((finding) => finding.ruleId === "SCA-LICENSE-001")?.owasp,
+    ).toBe("N/A");
   });
 
   it("produces no false positives on the hardened repository", async () => {

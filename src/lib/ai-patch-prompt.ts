@@ -5,6 +5,7 @@ export function buildAiPatchPrompt(payload: ReportPayload): string {
   const findings = payload.findings.map((finding) => ({
     severity: finding.severity,
     confidence: finding.confidence,
+    cwe: finding.cwe ?? [],
     rule: finding.ruleId,
     title: finding.title,
     location: `${finding.filePath}:${finding.lineStart}-${finding.lineEnd}`,

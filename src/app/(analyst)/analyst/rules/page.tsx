@@ -185,32 +185,30 @@ export default function RulesPage() {
       </div>
 
       <div className="mt-8 border border-line bg-card p-5">
-        <div className="mono-label">Benchmark posture</div>
+        <div className="mono-label">Fixture smoke tests · not accuracy measurements</div>
         <div className="mt-3 grid gap-4 text-[11.5px] leading-relaxed text-ink-soft md:grid-cols-3">
           <div>
-            <div className="font-serif text-[26px] leading-none text-success">29/29</div>
+            <div className="font-serif text-[26px] leading-none">2</div>
             <div className="mt-1 text-[10.5px] text-muted">
-              rule families detected in the seeded vulnerable app
+              local fixture repositories exercised
             </div>
           </div>
           <div>
-            <div className="font-serif text-[26px] leading-none text-success">0</div>
+            <div className="font-serif text-[26px] leading-none">1</div>
             <div className="mt-1 text-[10.5px] text-muted">
-              findings on the hardened benchmark repository
+              seeded vulnerable fixture
             </div>
           </div>
           <div>
-            <div className="font-serif text-[26px] leading-none">53</div>
+            <div className="font-serif text-[26px] leading-none">1</div>
             <div className="mt-1 text-[10.5px] text-muted">
-              raw automated findings before analyst triage on the vulnerable app
+              hardened control fixture
             </div>
           </div>
         </div>
         <p className="mt-4 border-t border-line pt-3 text-[10px] leading-relaxed text-muted">
-          The benchmark measures presence/absence of seeded patterns and a
-          no-finding control. It does not establish a calibrated false-positive
-          rate on real client code; that requires a larger labeled corpus and
-          blind analyst review.
+          These fixtures are smoke tests for known examples, not an independent
+          measure of precision, recall, or performance on arbitrary repositories.
         </p>
       </div>
     </div>

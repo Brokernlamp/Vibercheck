@@ -201,6 +201,7 @@ export async function runScan(
             fingerprint: finding.fingerprint,
             title: finding.analystTitle?.trim() || finding.title,
             severity: finding.severity,
+            cwe: finding.cwe ?? [],
             filePath: finding.filePath,
           })),
         }
@@ -218,6 +219,7 @@ export async function runScan(
           source: finding.source,
           title: finding.title,
           severity: finding.severity,
+          cwe: finding.cwe,
           owasp: finding.owasp,
           category: finding.category,
           filePath: finding.filePath,
@@ -258,6 +260,7 @@ export async function runScan(
           source: "ANALYST",
           title: prior.title,
           severity: prior.severity,
+          cwe: prior.cwe,
           owasp: prior.owasp,
           category: prior.category,
           filePath: prior.filePath,

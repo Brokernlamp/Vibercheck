@@ -8,6 +8,8 @@ import { summaryParagraphs, type ReportPayload } from "@/lib/report";
 import { AiPatchPromptActions } from "./ai-patch-prompt-actions";
 import {
   OWASP_CATEGORIES,
+  OWASP_CATEGORIES_2021,
+  OWASP_TAXONOMY_LABEL,
   SEVERITY_ORDER,
   formatDate,
   formatDateTime,
@@ -25,9 +27,14 @@ export function ReportView({
   clientView: boolean;
 }) {
   const selfService = payload.reviewMode === "self-service";
+  const taxonomyVersion = payload.taxonomyVersion ?? "OWASP Top 10:2021";
+  const taxonomyCategories =
+    taxonomyVersion === OWASP_TAXONOMY_LABEL
+      ? OWASP_CATEGORIES
+      : OWASP_CATEGORIES_2021;
   const counts = payload.counts;
   const maxCount = Math.max(1, ...SEVERITY_ORDER.map((severity) => counts[severity]));
-  const owaspRows = Object.entries(OWASP_CATEGORIES)
+  const owaspRows = Object.entries(taxonomyCategories)
     .map(([code, label]) => ({
       code,
       label,
@@ -208,7 +215,7 @@ export function ReportView({
                   <table className="audit-table">
                     <thead>
                       <tr>
-                        <th>OWASP category</th>
+                        <th>{taxonomyVersion} category</th>
                         <th>{selfService ? "Potential findings" : "Confirmed findings"}</th>
                         <th className="w-[45%]">Coverage</th>
                       </tr>
@@ -335,6 +342,12 @@ export function ReportView({
                       </span>
                       <span>·</span>
                       <span>{finding.owasp} — {finding.owaspLabel}</span>
+                      {(finding.cwe?.length ?? 0) > 0 && (
+                        <>
+                          <span>·</span>
+                          <span>{finding.cwe?.join(", ")}</span>
+                        </>
+                      )}
                       <span>·</span>
                       <span>{finding.ruleId}</span>
                     </div>

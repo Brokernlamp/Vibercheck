@@ -1,0 +1,131 @@
+import { describe, expect, it } from "vitest";
+import {
+  mergeSemgrepFindings,
+  normalizeSemgrepResults,
+  scanWithSemgrep,
+} from "../src/lib/scan/semgrep";
+import type { FileContext, RawFinding } from "../src/lib/scan/types";
+
+const root = "/tmp/vibecheck-semgrep-test/source";
+
+function source(path: string, content: string): FileContext {
+  return {
+    path,
+    content,
+    lines: content.split("\n"),
+    ext: path.slice(path.lastIndexOf(".")),
+  };
+}
+
+function result(
+  path: string,
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  return {
+    check_id: "vibecheck.js.sql-injection",
+    path,
+    start: { line: 2 },
+    end: { line: 2 },
+    extra: {
+      message: "Request-controlled data reaches a database query.",
+      severity: "ERROR",
+      metadata: {
+        category: "Injection",
+        confidence: 0.86,
+        cwe: "CWE-89",
+        owasp: "A05:2025",
+        remediation: "Use a parameterized query.",
+      },
+    },
+    ...overrides,
+  };
+}
+
+describe("Semgrep result normalization", () => {
+  it("normalizes authored rule metadata into a redacted VibeCheck finding", () => {
+    const file = source(
+      "src/users.ts",
+      'const query = "safe";\ndb.query(req.query.id);',
+    );
+    const normalized = normalizeSemgrepResults(root, [file], [
+      result(`${root}/src/users.ts`),
+    ]);
+
+    expect(normalized.skipped).toBe(0);
+    expect(normalized.findings).toHaveLength(1);
+    expect(normalized.findings[0]).toMatchObject({
+      ruleId: "vibecheck.js.sql-injection",
+      source: "CUSTOM",
+      severity: "HIGH",
+      cwe: ["CWE-89"],
+      owasp: "A05",
+      filePath: "src/users.ts",
+      lineStart: 2,
+      confidence: 86,
+    });
+  });
+
+  it("omits results that lack valid taxonomy metadata or an in-scope source file", () => {
+    const file = source("src/users.ts", "db.query(input);");
+    const missingMetadata = result(`${root}/src/users.ts`, {
+      extra: {
+        message: "Finding",
+        severity: "WARNING",
+        metadata: { cwe: "not-a-cwe", owasp: "A99" },
+      },
+    });
+    const outsideRepository = result("/etc/passwd");
+    const normalized = normalizeSemgrepResults(root, [file], [
+      missingMetadata,
+      outsideRepository,
+    ]);
+
+    expect(normalized.findings).toEqual([]);
+    expect(normalized.skipped).toBe(2);
+  });
+
+  it("rejects malformed result collections", () => {
+    expect(() => normalizeSemgrepResults(root, [], null)).toThrow(
+      "did not contain a results array",
+    );
+  });
+});
+
+describe("Semgrep finding merge", () => {
+  it("reports an unavailable Semgrep executable as a scanner warning", async () => {
+    const scan = await scanWithSemgrep(
+      [source("src/users.ts", "db.query(input);")],
+      "/vibecheck-test-missing-semgrep",
+    );
+
+    expect(scan.findings).toEqual([]);
+    expect(scan.warnings[0]).toContain("Semgrep scan failed");
+  });
+
+  it("deduplicates equivalent CWE findings at the same file and line", () => {
+    const existing = {
+      ruleId: "AI-SQL-001",
+      source: "CUSTOM",
+      title: "SQL injection",
+      severity: "HIGH",
+      cwe: ["CWE-89"],
+      owasp: "A05",
+      category: "Injection",
+      filePath: "src/users.ts",
+      lineStart: 2,
+      lineEnd: 2,
+      snippet: "",
+      description: "",
+      remediation: "",
+      confidence: 80,
+      fingerprint: "native",
+    } satisfies RawFinding;
+    const semgrep = {
+      ...existing,
+      ruleId: "vibecheck.js.sql-injection",
+      fingerprint: "semgrep",
+    };
+
+    expect(mergeSemgrepFindings([existing], [semgrep])).toEqual([existing]);
+  });
+});

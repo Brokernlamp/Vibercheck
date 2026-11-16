@@ -1,0 +1,2 @@
+# Optional Node-hosted Semgrep subprocess backend; install in the scanner environment.
+semgrep==1.185.0

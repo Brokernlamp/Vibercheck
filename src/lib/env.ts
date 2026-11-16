@@ -133,6 +133,11 @@ export function osvOffline(): boolean {
   return process.env.OSV_OFFLINE === "1";
 }
 
+/** Semgrep is optional and disabled by default; it requires a pinned local CLI. */
+export function semgrepEnabled(): boolean {
+  return process.env.SEMGREP_ENABLED === "1";
+}
+
 export function logLevel(): "debug" | "info" | "warn" | "error" {
   const value = process.env.LOG_LEVEL;
   if (value === "debug" || value === "info" || value === "warn" || value === "error") {
@@ -178,6 +183,9 @@ export function configurationProblems(): string[] {
   }
   if (process.env.SCAN_EXECUTION && !["inline", "worker"].includes(process.env.SCAN_EXECUTION)) {
     problems.push("SCAN_EXECUTION must be inline or worker");
+  }
+  if (process.env.SEMGREP_ENABLED && !["0", "1"].includes(process.env.SEMGREP_ENABLED)) {
+    problems.push("SEMGREP_ENABLED must be 0 or 1");
   }
   return problems;
 }

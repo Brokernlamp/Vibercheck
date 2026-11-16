@@ -45,7 +45,9 @@ async function main() {
       );
     }
   }
-  console.log(`\nRules covered: ${seen.size}/${EXPECTED.length}`);
+  console.log(
+    `\nBuilt-in checks exercised by the vulnerable fixture: ${seen.size}/${EXPECTED.length} (fixture coverage only; not accuracy or recall)`,
+  );
   if (missing.length) {
     console.log(`Missing expected rules:\n  ${missing.join("\n  ")}`);
   }

@@ -44,7 +44,7 @@ export const secretRules: Rule[] = [
     severity: "CRITICAL",
     confidence: 98,
     source: "SECRET",
-    owasp: "A02",
+    owasp: "A07",
     category: "Exposed credential",
     description:
       "An AWS access key identifier is present in the repository. Anyone with repository access can attempt to use it, and it may already be in clones, CI logs, or build artifacts.",
@@ -73,7 +73,7 @@ export const secretRules: Rule[] = [
     severity: "CRITICAL",
     confidence: 98,
     source: "SECRET",
-    owasp: "A02",
+    owasp: "A07",
     category: "Exposed credential",
     description:
       "A Stripe secret key is committed. A live key permits charges, refunds, customer access, and payout changes; a test key still indicates unsafe secret handling.",
@@ -106,7 +106,7 @@ export const secretRules: Rule[] = [
     severity: "CRITICAL",
     confidence: 97,
     source: "SECRET",
-    owasp: "A02",
+    owasp: "A07",
     category: "Exposed credential",
     description:
       "A GitHub personal access token or app token is present in the repository. Depending on scopes it can read private code, modify repositories, or act as the app installation.",
@@ -137,7 +137,7 @@ export const secretRules: Rule[] = [
     severity: "CRITICAL",
     confidence: 96,
     source: "SECRET",
-    owasp: "A02",
+    owasp: "A04",
     category: "Exposed credential",
     description:
       "A private key block is present in the repository. If it is still trusted, anyone with the repository can impersonate the service or decrypt protected material.",
@@ -167,7 +167,7 @@ export const secretRules: Rule[] = [
     severity: "HIGH",
     confidence: 76,
     source: "SECRET",
-    owasp: "A02",
+    owasp: "A07",
     category: "Exposed credential",
     description:
       "A secret-looking variable is assigned a literal value. This is one of the most common failure modes in AI-assisted commits, because generated examples often use real-looking keys.",

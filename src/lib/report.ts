@@ -1,7 +1,13 @@
 import type { Engagement, Finding, Organization, ScanRun } from "@/db/schema";
 import { computeRisk, severityRank } from "./scan/score";
 import type { SeverityCounts } from "./scan/types";
-import { OWASP_CATEGORIES, SEVERITY_ORDER, TIERS, type Severity } from "./domain";
+import {
+  OWASP_CATEGORIES,
+  OWASP_TAXONOMY_LABEL,
+  SEVERITY_ORDER,
+  TIERS,
+  type Severity,
+} from "./domain";
 
 export interface ScanComparison {
   previousScanId: string;
@@ -14,6 +20,7 @@ export interface ScanComparison {
     fingerprint: string;
     title: string;
     severity: Severity;
+    cwe: string[];
     filePath: string;
   }>;
 }
@@ -23,6 +30,7 @@ export interface ReportFindingSnapshot {
   ruleId: string;
   title: string;
   severity: Severity;
+  cwe?: string[];
   source: string;
   owasp: string;
   owaspLabel: string;
@@ -42,6 +50,7 @@ export interface ReportFindingSnapshot {
 export interface ReportPayload {
   schemaVersion: 1;
   reviewMode: "analyst" | "self-service";
+  taxonomyVersion?: "OWASP Top 10:2021" | "OWASP Top 10:2025";
   version: number;
   generatedAt: string;
   executiveSummary: string;
@@ -317,6 +326,7 @@ export function buildReportPayload({
       ruleId: finding.ruleId,
       title: reportableTitle(finding),
       severity: finding.severity,
+      cwe: finding.cwe ?? [],
       source: finding.source,
       owasp: finding.owasp,
       owaspLabel: OWASP_CATEGORIES[finding.owasp] ?? finding.owasp,
@@ -337,6 +347,7 @@ export function buildReportPayload({
   return {
     schemaVersion: 1,
     reviewMode,
+    taxonomyVersion: OWASP_TAXONOMY_LABEL,
     version,
     generatedAt: new Date().toISOString(),
     executiveSummary,
@@ -370,7 +381,7 @@ export function buildReportPayload({
     analystNote: reviewMode === "analyst" ? analystNote : null,
     methodology: [
       "Repository inventory and language-aware static analysis.",
-      "Twenty-one named AI-code and MCP checks mapped to OWASP Top 10 categories.",
+      `Built-in static-analysis and secret-detection checks are mapped to ${OWASP_TAXONOMY_LABEL} categories where applicable; the Top 10 is an awareness taxonomy, not a complete verification standard.`,
       "Credential detection with redacted evidence; raw secrets are never stored in findings.",
       "Dependency vulnerability review against live OSV advisories (GitHub Advisory, NVD, and ecosystem feeds), resolved from lockfile versions where present.",
       "Restrictive-license review of declared dependencies.",

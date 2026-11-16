@@ -17,6 +17,7 @@ export interface RuleMatch {
   evidence: string;
   /** Optional pre-rendered, redacted snippet. */
   snippet?: string;
+  cwe?: string[];
   title?: string;
   severity?: Severity;
   confidence?: number;
@@ -32,6 +33,7 @@ export interface Rule {
   severity: Severity;
   confidence: number;
   source: RuleSource;
+  cwe?: string[];
   owasp: string;
   category: string;
   description: string;
@@ -45,6 +47,7 @@ export interface RawFinding {
   source: RuleSource;
   title: string;
   severity: Severity;
+  cwe: string[];
   owasp: string;
   category: string;
   filePath: string;

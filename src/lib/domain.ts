@@ -111,6 +111,22 @@ export const STATUS_TONE: Record<
 
 export const OWASP_CATEGORIES: Record<string, string> = {
   A01: "Broken Access Control",
+  A02: "Security Misconfiguration",
+  A03: "Software Supply Chain Failures",
+  A04: "Cryptographic Failures",
+  A05: "Injection",
+  A06: "Insecure Design",
+  A07: "Authentication Failures",
+  A08: "Software or Data Integrity Failures",
+  A09: "Security Logging and Alerting Failures",
+  A10: "Mishandling of Exceptional Conditions",
+  "N/A": "Not an OWASP Top 10 security category",
+};
+
+export const OWASP_TAXONOMY_LABEL = "OWASP Top 10:2025";
+
+export const OWASP_CATEGORIES_2021: Record<string, string> = {
+  A01: "Broken Access Control",
   A02: "Cryptographic Failures",
   A03: "Injection",
   A04: "Insecure Design",

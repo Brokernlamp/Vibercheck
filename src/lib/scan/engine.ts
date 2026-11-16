@@ -9,6 +9,9 @@ import { fingerprintFor } from "./fingerprint";
 import { computeRisk, countSeverities, severityRank } from "./score";
 import { redactSnippetText } from "./redact";
 import { detectStack, formatDetectedStack } from "./detect-stack";
+import { cweForRule } from "./cwe";
+import { mergeSemgrepFindings, scanWithSemgrep, SEMGREP_RULESET_VERSION } from "./semgrep";
+import { semgrepEnabled } from "../env";
 import {
   DEFAULT_SCAN_LIMITS,
   ENGINE_VERSION,
@@ -23,6 +26,8 @@ import {
 export interface ScanOptions {
   /** Skip outbound OSV lookups (unit tests, air-gapped installs). */
   offline?: boolean;
+  /** Override the opt-in Semgrep backend in tests or explicit scan callers. */
+  semgrep?: boolean;
 }
 
 function toRawFinding(
@@ -32,11 +37,16 @@ function toRawFinding(
 ): RawFinding {
   const lineStart = Math.max(1, match.lineStart);
   const lineEnd = Math.max(lineStart, match.lineEnd ?? lineStart);
+  const cwe = match.cwe ?? rule.cwe ?? cweForRule(rule.id);
+  if (cwe.length === 0) {
+    throw new Error(`Rule ${rule.id} is missing CWE metadata`);
+  }
   return {
     ruleId: rule.id,
     source: rule.source,
     title: match.title ?? rule.title,
     severity: match.severity ?? rule.severity,
+    cwe,
     owasp: match.owasp ?? rule.owasp,
     category: match.category ?? rule.category,
     filePath: file.path,
@@ -143,7 +153,7 @@ export async function scanDirectory(
   const collected = await collectFiles(root, limits);
   const files = collected.files;
   const warnings: string[] = [];
-  const rawFindings: RawFinding[] = [];
+  let rawFindings: RawFinding[] = [];
 
   for (const file of files) {
     for (const rule of [...customRules, ...secretRules]) {
@@ -192,6 +202,19 @@ export async function scanDirectory(
     );
   }
 
+  let engineVersion = ENGINE_VERSION;
+  if (options.semgrep ?? semgrepEnabled()) {
+    const semgrep = await scanWithSemgrep(files);
+    warnings.push(...semgrep.warnings);
+    rawFindings = mergeSemgrepFindings(
+      rawFindings,
+      semgrep.findings.map(applyPrecision),
+    );
+    if (semgrep.engineVersion) {
+      engineVersion = `${ENGINE_VERSION}; Semgrep ${semgrep.engineVersion}; ${SEMGREP_RULESET_VERSION}`;
+    }
+  }
+
   const prioritized = prioritizeFindings(rawFindings, limits.maxFindings);
   const findings = prioritized.findings;
   const detectedStack = formatDetectedStack(detectStack(files));
@@ -209,7 +232,7 @@ export async function scanDirectory(
     skippedFiles: collected.skippedFiles,
     truncated: collected.truncated || prioritized.truncated,
     durationMs: Date.now() - startedAt,
-    engineVersion: ENGINE_VERSION,
+    engineVersion,
     score: risk.score,
     grade: risk.grade,
     counts,

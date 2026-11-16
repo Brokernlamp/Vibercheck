@@ -63,7 +63,7 @@ export const customRules: Rule[] = [
       severity: "CRITICAL",
       confidence: 88,
       source: "CUSTOM",
-      owasp: "A03",
+      owasp: "A05",
       category: "Injection",
       description:
         "A SQL statement is assembled from interpolated or concatenated values. LLM-generated CRUD code frequently produces this pattern, allowing user input to change query structure and enabling SQL injection.",
@@ -190,7 +190,7 @@ export const customRules: Rule[] = [
       severity: "HIGH",
       confidence: 84,
       source: "CUSTOM",
-      owasp: "A05",
+      owasp: "A02",
       category: "Security misconfiguration",
       description:
         "CORS accepts every origin, and in some cases does so while allowing credentials. Any website can then make authenticated requests to the API on behalf of a signed-in user.",
@@ -237,7 +237,7 @@ export const customRules: Rule[] = [
       severity: "HIGH",
       confidence: 86,
       source: "CUSTOM",
-      owasp: "A02",
+      owasp: "A07",
       category: "Cryptographic failures",
       description:
         "A JWT operation uses a literal signing secret or explicitly weakens verification. A committed signing key lets anyone mint valid tokens for any user.",
@@ -283,7 +283,7 @@ export const customRules: Rule[] = [
       severity: "MEDIUM",
       confidence: 78,
       source: "CUSTOM",
-      owasp: "A02",
+      owasp: "A04",
       category: "Cryptographic failures",
       description:
         "Math.random() or random.random() is used in a token, reset, OTP, or session context. These generators are predictable and unsuitable for security-sensitive values.",
@@ -319,7 +319,7 @@ export const customRules: Rule[] = [
       severity: "HIGH",
       confidence: 82,
       source: "CUSTOM",
-      owasp: "A02",
+      owasp: "A04",
       category: "Cryptographic failures",
       description:
         "Password material is handled with a fast hash such as MD5/SHA-1 or compared directly. Either pattern makes credential recovery or credential stuffing substantially easier after a leak.",
@@ -368,7 +368,7 @@ export const customRules: Rule[] = [
       severity: "CRITICAL",
       confidence: 82,
       source: "CUSTOM",
-      owasp: "A03",
+      owasp: "A05",
       category: "Injection",
       description:
         "The code evaluates a string as executable code. If any part of that string is influenced by a request, an attacker can run arbitrary code in the application process.",
@@ -432,7 +432,7 @@ export const customRules: Rule[] = [
       severity: "MEDIUM",
       confidence: 74,
       source: "CUSTOM",
-      owasp: "A10",
+      owasp: "A01",
       category: "Server-side request forgery",
       description:
         "The server fetches a URL taken directly from request data. That may let an attacker reach internal metadata services, admin panels, or private network ranges.",
@@ -541,7 +541,7 @@ export const customRules: Rule[] = [
       severity: "MEDIUM",
       confidence: 78,
       source: "CUSTOM",
-      owasp: "A05",
+      owasp: "A02",
       category: "Security misconfiguration",
       description:
         "The application runs with debug enabled or returns internal stack traces. This exposes file paths, library versions, and sometimes secrets or query text.",
@@ -620,7 +620,7 @@ export const customRules: Rule[] = [
       severity: "MEDIUM",
       confidence: 92,
       source: "CUSTOM",
-      owasp: "A02",
+      owasp: "A04",
       category: "Cryptographic failures",
       description:
         "The client explicitly disables certificate validation. An attacker on the network path can impersonate the upstream service and read or alter traffic.",
@@ -650,7 +650,7 @@ export const customRules: Rule[] = [
       severity: "HIGH",
       confidence: 86,
       source: "CUSTOM",
-      owasp: "A05",
+      owasp: "A02",
       category: "Security misconfiguration",
       description:
         "An infrastructure policy grants Action \"*\" on Resource \"*\". A leaked credential then has full control of the account or project.",
@@ -683,7 +683,7 @@ export const customRules: Rule[] = [
       severity: "HIGH",
       confidence: 68,
       source: "CUSTOM",
-      owasp: "A03",
+      owasp: "A05",
       category: "Cross-site scripting",
       description:
         "The component renders raw HTML or writes to innerHTML. If the content includes user or model-generated data, injected markup can execute in a victim's browser.",
@@ -747,7 +747,7 @@ export const customRules: Rule[] = [
       severity: "HIGH",
       confidence: 60,
       source: "CUSTOM",
-      owasp: "A01",
+      owasp: "A07",
       category: "MCP security",
       description:
         "An HTTP-exposed Model Context Protocol server appears to have no authentication or caller verification. Any client that can reach the endpoint can invoke its tools.",
@@ -817,7 +817,7 @@ export const customRules: Rule[] = [
       severity: "CRITICAL",
       confidence: 84,
       source: "CUSTOM",
-      owasp: "A03",
+      owasp: "A05",
       category: "MCP security",
       description:
         "An MCP tool interpolates model-controlled arguments into a shell command or spawns with shell mode. A prompt-injected agent can execute arbitrary commands on the host.",
