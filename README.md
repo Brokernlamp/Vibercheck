@@ -107,6 +107,15 @@ be partial. Static findings are leads to validate, not proof of exploitability. 
 labels use the OWASP Top 10:2025 awareness taxonomy where applicable; they do not
 represent ASVS verification or certification.
 
+### ASVS requirement references
+
+Findings with supported CWE metadata include candidate OWASP ASVS 5.0.0 requirement
+IDs. The references are derived from OWASP's archived CWE crosswalk and its official
+mapping from the pre-release identifiers to stable 5.0.0 IDs. Unmapped CWEs stay
+unmapped rather than receiving guessed requirements. These links are advisory
+references only; they do not indicate that a requirement was assessed, satisfied, or
+certified. See the [ASVS 5.0.0 source and mappings](https://github.com/OWASP/ASVS/tree/v5.0.0_release/5.0).
+
 ### Optional Semgrep backend
 
 The scanner includes a small VibeCheck-authored Semgrep ruleset for JavaScript /
@@ -144,6 +153,23 @@ tag, Python SQL injection, and unescaped remote response content returned as HTM
 Semgrep's defaults skipped `vendor/acme-widget`; `p/secrets` found only the JWT
 secret already detected by VibeCheck. This fixture result is a regression exercise,
 not an accuracy, recall, or coverage benchmark.
+
+The same pinned packs were also evaluated against OWASP Juice Shop `v20.4.0`
+(`266448aba68cd8ba5915f526a128da4fa7bc3f9f`). Semgrep scanned 1,218 targets and
+reported 45 matches; after CWE/location deduplication against 246 built-in findings,
+39 additional finding rows remained (32 production-classified and 7 vendor-classified
+rows). These are finding rows, not 39 manually confirmed, distinct vulnerabilities.
+The scan reported 53 non-fatal parse warnings (24 under `data/static/codefixes/`,
+21 workflow files, and 8 HTML templates), skipped 8 default-excluded paths, and omitted two
+files larger than 1 MB. The previously skipped `vendor/acme-widget` fixture was
+also scanned explicitly; its two files produced no community-rule findings. Keep
+these Semgrep-maintained packs out of VibeCheck's SaaS runtime: the
+[Semgrep Rules License v1.0](https://semgrep.dev/legal/rules-license) permits
+internal business use but does not allow distributing the rules or making them
+available as a service. Their evaluation was local only; the scanner continues to
+use VibeCheck-authored rules on the Semgrep engine. Reconsider the maintained packs
+only with separate written commercial permission. Third-party rule packs require
+their own license and quality review.
 
 The repository includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that
 runs typecheck, tests, scanner benchmarks, and the production build on pushes and

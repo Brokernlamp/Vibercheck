@@ -14,6 +14,7 @@ import {
   formatDate,
   formatDateTime,
 } from "@/lib/domain";
+import { ASVS_LABEL, ASVS_SOURCE_URL } from "@/lib/scan/asvs";
 
 export function ReportView({
   payload,
@@ -348,6 +349,20 @@ export function ReportView({
                           <span>{finding.cwe?.join(", ")}</span>
                         </>
                       )}
+                      {finding.asvs?.length ? (
+                        <>
+                          <span>·</span>
+                          <a
+                            href={ASVS_SOURCE_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline decoration-dotted underline-offset-2"
+                          >
+                            {payload.asvsVersion ?? ASVS_LABEL}:{" "}
+                            {finding.asvs.join(", ")}
+                          </a>
+                        </>
+                      ) : null}
                       <span>·</span>
                       <span>{finding.ruleId}</span>
                     </div>

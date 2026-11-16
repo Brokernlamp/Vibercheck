@@ -8,6 +8,7 @@ import {
   TIERS,
   type Severity,
 } from "./domain";
+import { asvsForCwe, ASVS_LABEL } from "./scan/asvs";
 
 export interface ScanComparison {
   previousScanId: string;
@@ -31,6 +32,7 @@ export interface ReportFindingSnapshot {
   title: string;
   severity: Severity;
   cwe?: string[];
+  asvs?: string[];
   source: string;
   owasp: string;
   owaspLabel: string;
@@ -51,6 +53,7 @@ export interface ReportPayload {
   schemaVersion: 1;
   reviewMode: "analyst" | "self-service";
   taxonomyVersion?: "OWASP Top 10:2021" | "OWASP Top 10:2025";
+  asvsVersion?: string;
   version: number;
   generatedAt: string;
   executiveSummary: string;
@@ -327,6 +330,7 @@ export function buildReportPayload({
       title: reportableTitle(finding),
       severity: finding.severity,
       cwe: finding.cwe ?? [],
+      asvs: asvsForCwe(finding.cwe ?? []),
       source: finding.source,
       owasp: finding.owasp,
       owaspLabel: OWASP_CATEGORIES[finding.owasp] ?? finding.owasp,
@@ -348,6 +352,7 @@ export function buildReportPayload({
     schemaVersion: 1,
     reviewMode,
     taxonomyVersion: OWASP_TAXONOMY_LABEL,
+    asvsVersion: ASVS_LABEL,
     version,
     generatedAt: new Date().toISOString(),
     executiveSummary,
@@ -382,6 +387,7 @@ export function buildReportPayload({
     methodology: [
       "Repository inventory and language-aware static analysis.",
       `Built-in static-analysis and secret-detection checks are mapped to ${OWASP_TAXONOMY_LABEL} categories where applicable; the Top 10 is an awareness taxonomy, not a complete verification standard.`,
+      `CWE-derived ${ASVS_LABEL} references use OWASP's archived CWE crosswalk converted to the stable requirement IDs; they are advisory links, not evidence that a requirement is satisfied.`,
       "Credential detection with redacted evidence; raw secrets are never stored in findings.",
       "Dependency vulnerability review against live OSV advisories (GitHub Advisory, NVD, and ecosystem feeds), resolved from lockfile versions where present.",
       "Restrictive-license review of declared dependencies.",
