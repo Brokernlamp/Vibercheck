@@ -61,6 +61,7 @@ export const PATH_PRECISION: Record<PathKind, PathPrecision> = {
 
 const TEST_DIR = /^(?:tests?|__tests__|__mocks__|__snapshots__|specs?|e2e|cypress|playwright|testdata|test-data|fixtures?|mocks?|benchmarks?|perf)$/i;
 const EXAMPLE_DIR = /^(?:examples?|samples?|demos?|demo|playground|sandbox|cookbook|tutorials?|starters?|boilerplates?|templates?|stories)$/i;
+const CODE_FIX_DIR = /^(?:code[-_]?fixes?)$/i;
 const DOC_DIR = /^(?:docs?|documentation|website|site|guides?|manual|wiki)$/i;
 const VENDOR_DIR = /^(?:vendor|vendors|third[_-]?party|external|bower_components|node_modules|static|assets|public|help|www|htdocs|webroot)$/i;
 const GENERATED_DIR = /^(?:generated|__generated__|gen|codegen|dist|build|out|coverage|\.next)$/i;
@@ -71,9 +72,8 @@ const DOC_FILE = /\.(?:md|mdx|markdown|rst|adoc|txt)$/i;
 const GENERATED_FILE = /(?:\.min\.(?:js|css)$|\.bundle\.js$|\.generated\.[a-z]+$|\.g\.dart$|_pb2\.py$|\.pb\.go$|\.designer\.cs$)/i;
 
 /**
- * Classifies a repository-relative POSIX path. The most specific match wins:
- * a `/docs/examples/` path is an example, and `vendor/` beats everything else
- * because third-party code is never the client's own defect.
+ * Classifies a repository-relative POSIX path. Explicit code-fix samples are
+ * examples even when nested under a generic `static/` or `vendor/` directory.
  */
 export function classifyPath(filePath: string): PathKind {
   const segments = filePath
@@ -85,6 +85,7 @@ export function classifyPath(filePath: string): PathKind {
   const directories = segments.slice(0, -1);
   const fileName = segments[segments.length - 1] ?? "";
 
+  if (directories.some((segment) => CODE_FIX_DIR.test(segment))) return "example";
   if (directories.some((segment) => VENDOR_DIR.test(segment))) return "vendor";
   if (GENERATED_FILE.test(fileName) || directories.some((segment) => GENERATED_DIR.test(segment))) {
     return "generated";

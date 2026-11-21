@@ -118,10 +118,13 @@ certified. See the [ASVS 5.0.0 source and mappings](https://github.com/OWASP/ASV
 
 ### Optional Semgrep backend
 
-The scanner includes a small VibeCheck-authored Semgrep ruleset for JavaScript /
-TypeScript and Python taint patterns. It is disabled by default and does not fetch
-Semgrep Community Rules or other remote rules. In a Node.js scanner environment,
-install the pinned CLI and opt in:
+The scanner includes a VibeCheck-authored Semgrep ruleset for JavaScript /
+TypeScript and Python taint patterns, plus focused GitHub Actions checks for
+untrusted event data interpolated into `run:` commands and remote installer
+scripts piped to a shell. Ordinary branch-name references are not treated as
+untrusted event input; remote installer findings are medium-severity review prompts.
+It is disabled by default and does not fetch Semgrep Community Rules or other
+remote rules. In a Node.js scanner environment, install the pinned CLI and opt in:
 
 ```bash
 python -m pip install -r scanner-requirements.txt
@@ -157,8 +160,11 @@ not an accuracy, recall, or coverage benchmark.
 The same pinned packs were also evaluated against OWASP Juice Shop `v20.4.0`
 (`266448aba68cd8ba5915f526a128da4fa7bc3f9f`). Semgrep scanned 1,218 targets and
 reported 45 matches; after CWE/location deduplication against 246 built-in findings,
-39 additional finding rows remained (32 production-classified and 7 vendor-classified
-rows). These are finding rows, not 39 manually confirmed, distinct vulnerabilities.
+39 additional finding rows remained (32 production-classified and 7 classified as
+vendor by the then-current path logic). Triage clarified that the seven
+`data/static/codefixes/` rows are challenge snippets, not third-party vendor code;
+the path classifier now recognizes code-fix directories as examples. These are
+rows, not 39 confirmed vulnerabilities.
 The scan reported 53 non-fatal parse warnings (24 under `data/static/codefixes/`,
 21 workflow files, and 8 HTML templates), skipped 8 default-excluded paths, and omitted two
 files larger than 1 MB. The previously skipped `vendor/acme-widget` fixture was
@@ -170,6 +176,11 @@ available as a service. Their evaluation was local only; the scanner continues t
 use VibeCheck-authored rules on the Semgrep engine. Reconsider the maintained packs
 only with separate written commercial permission. Third-party rule packs require
 their own license and quality review.
+
+Source review classified the reconstructed 39 candidates as 6 likely true positives,
+10 likely false positives, 7 non-actionable challenge snippets, and 16 needing
+context. Because the normalized output was not retained and 16 rows remain
+unresolved, this is not a defensible precision measurement.
 
 A separate built-in-only scan of the same Juice Shop revision scanned 1,137 files
 and produced 246 findings; 198 (80.5%) received at least one ASVS reference, across

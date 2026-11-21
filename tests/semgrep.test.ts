@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import {
   mergeSemgrepFindings,
@@ -7,6 +8,15 @@ import {
 import type { FileContext, RawFinding } from "../src/lib/scan/types";
 
 const root = "/tmp/vibecheck-semgrep-test/source";
+const HAS_PINNED_SEMGREP = (() => {
+  try {
+    return execFileSync("semgrep", ["--version"], { encoding: "utf8" })
+      .trim()
+      .endsWith("1.185.0");
+  } catch {
+    return false;
+  }
+})();
 
 function source(path: string, content: string): FileContext {
   return {
@@ -158,5 +168,75 @@ describe("Semgrep finding merge", () => {
 
     expect(mergeSemgrepFindings([existing], [semgrep])).toEqual([existing]);
     expect(mergeSemgrepFindings([], [semgrep, semgrep])).toEqual([semgrep]);
+  });
+});
+
+describe.skipIf(!HAS_PINNED_SEMGREP)("Authored GitHub Actions rules", () => {
+  it("flags untrusted event interpolation and remote installers, not trusted refs", async () => {
+    const files = [
+      source(
+        ".github/workflows/trusted.yml",
+        [
+          "name: trusted",
+          "on:",
+          "  push:",
+          "    branches: [main]",
+          "jobs:",
+          "  build:",
+          "    steps:",
+          "      - run: echo ${{ github.ref_name }}",
+        ].join("\n"),
+      ),
+      source(
+        ".github/workflows/untrusted.yml",
+        [
+          "name: untrusted",
+          "on: pull_request_target",
+          "jobs:",
+          "  build:",
+          "    steps:",
+          "      - run: |",
+          "          echo ${{ github.event.pull_request.title }}",
+        ].join("\n"),
+      ),
+      source(
+        ".github/workflows/install.yml",
+        [
+          "jobs:",
+          "  build:",
+          "    steps:",
+          "      - run: |",
+          "          curl -fsSL https://example.test/install.sh | sh",
+        ].join("\n"),
+      ),
+    ];
+
+    const result = await scanWithSemgrep(files);
+
+    expect(result.warnings).toEqual([]);
+    expect(
+      result.findings.map(({ ruleId, filePath, lineStart, severity, cwe }) => ({
+        ruleId,
+        filePath,
+        lineStart,
+        severity,
+        cwe,
+      })),
+    ).toEqual([
+      {
+        ruleId: "vibecheck.github-actions.remote-shell-installer",
+        filePath: ".github/workflows/install.yml",
+        lineStart: 4,
+        severity: "MEDIUM",
+        cwe: ["CWE-494"],
+      },
+      {
+        ruleId: "vibecheck.github-actions.untrusted-event-shell",
+        filePath: ".github/workflows/untrusted.yml",
+        lineStart: 6,
+        severity: "HIGH",
+        cwe: ["CWE-78"],
+      },
+    ]);
   });
 });

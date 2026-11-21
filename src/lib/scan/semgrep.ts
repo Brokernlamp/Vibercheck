@@ -114,6 +114,40 @@ export const SEMGREP_RULES = `rules:
               - pattern: subprocess.Popen($CMD, ..., shell=True, ...)
               - pattern: os.system($CMD)
           - focus-metavariable: $CMD
+
+  - id: vibecheck.github-actions.untrusted-event-shell
+    languages: [yaml]
+    severity: ERROR
+    message: Untrusted GitHub event data is interpolated into a workflow shell command.
+    metadata:
+      category: Command injection
+      confidence: 84
+      cwe: CWE-78
+      owasp: A05:2025
+      remediation: Do not interpolate attacker-controlled event fields into run commands; pass validated values through environment variables and quote them.
+    patterns:
+      - pattern: |
+              run: $COMMAND
+      - metavariable-regex:
+              metavariable: $COMMAND
+              regex: '(?s).*\\$\\{\\{\\s*github\\.event\\.(?:pull_request\\.(?:title|body|head\\.ref)|issue\\.(?:title|body)|comment\\.body|review\\.body|discussion\\.(?:title|body)|head_commit\\.message)\\s*\\}\\}.*'
+
+  - id: vibecheck.github-actions.remote-shell-installer
+    languages: [yaml]
+    severity: WARNING
+    message: A remote installer script is piped directly into a workflow shell.
+    metadata:
+      category: Supply chain
+      confidence: 72
+      cwe: CWE-494
+      owasp: A08:2025
+      remediation: Prefer a pinned, integrity-verified release artifact over piping a remote script directly to a shell.
+    patterns:
+      - pattern: |
+              run: $COMMAND
+      - metavariable-regex:
+              metavariable: $COMMAND
+              regex: '(?is).*\\b(?:curl|wget)\\b.*\\|\\s*(?:sudo\\s+)?(?:sh|bash)\\b.*'
 `;
 
 interface SemgrepMetadata {

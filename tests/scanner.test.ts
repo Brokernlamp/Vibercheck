@@ -158,6 +158,7 @@ describe("path precision", () => {
     expect(classifyPath("README.md")).toBe("docs");
     expect(classifyPath("vendor/acme-widget/index.js")).toBe("vendor");
     expect(classifyPath("third_party/lib.js")).toBe("vendor");
+    expect(classifyPath("data/static/codefixes/example.ts")).toBe("example");
     expect(classifyPath("src/generated/api.ts")).toBe("generated");
     expect(classifyPath("app.min.js")).toBe("generated");
     expect(classifyPath("benchmarks/vulnerable-app/server.js")).toBe("test");
@@ -186,6 +187,18 @@ describe("path precision", () => {
       filePath: "docs/recipes/auth.md",
     });
     expect(docs.severity).toBe("LOW");
+
+    const codeFix = tuneHeuristicFinding({
+      severity: "HIGH",
+      confidence: 88,
+      filePath: "data/static/codefixes/example.ts",
+    });
+    expect(codeFix).toMatchObject({
+      kind: "example",
+      severity: "MEDIUM",
+      confidence: 40,
+      demoted: true,
+    });
   });
 
   it("demotes heuristic findings in examples but keeps secrets at full strength", () => {
